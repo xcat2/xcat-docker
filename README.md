@@ -8,11 +8,11 @@ $ docker build -t xcat .
 ```
 #### Build container based on Ubuntu 16.04 (Xenial)
 ```
-$ docker build -f Dockerfile.ubuntu -t xcat-ubuntu .
+$ docker build -f ubuntu/Dockerfile -t xcat:xenial .
 ```
 #### Build container based on Ubuntu 18.04 (Bionic)
 ```
-$ docker build --build-arg xcat_basos=bionic -f Dockerfile.ubuntu -t xcat-ubuntu .
+$ docker build --build-arg xcat_basos=bionic -f ubuntu/Dockerfile -t xcat:bionic .
 ```
 
 ## Launching
