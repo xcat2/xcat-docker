@@ -37,12 +37,14 @@ RUN apt-get update && apt-get install -y --allow-unauthenticated \
        sudo \
        psmisc \
        openssh-server \
-       rsyslog && \
+       rsyslog \
+       vim-common && \
     apt-get clean
 
 RUN sed -i -e 's|PermitRootLogin prohibit-password|PermitRootLogin yes|g' \
            -e 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' \
            -e 's|#UseDNS yes|UseDNS no|g' /etc/ssh/sshd_config && \
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
     echo "root:cluster" | chpasswd && \
     sudo a2enmod ssl && \
     ln -s ../sites-available/default-ssl.conf /etc/apache2/sites-enabled/ssl.conf && \
@@ -56,7 +58,8 @@ RUN systemctl enable apache2 && \
 
 ADD entrypoint.sh /etc/rc.d/rc.local
 RUN chmod +x /etc/rc.d/rc.local ; systemctl enable rc-local
-
+ENV XCATROOT /opt/xcat
+ENV PATH="$XCATROOT/bin:$XCATROOT/sbin:$XCATROOT/share/xcat/tools:$PATH" MANPATH="$XCATROOT/share/man:$MANPATH"
 VOLUME [ "/xcatdata", "/var/log/xcat" ]
 
 CMD [ "/sbin/init" ]

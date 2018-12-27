@@ -28,11 +28,14 @@ RUN yum install -y -q wget which &&\
     yum install -y \
        xCAT \
        openssh-server \
-       rsyslog && \
+       rsyslog \
+       chrony \
+       man && \
     yum clean all
 
 RUN sed -i -e 's|#PermitRootLogin yes|PermitRootLogin yes|g' \
            -e 's|#UseDNS yes|UseDNS no|g' /etc/ssh/sshd_config && \
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
     echo "root:cluster" | chpasswd && \
     touch /etc/NEEDINIT
 
@@ -44,7 +47,8 @@ RUN systemctl enable httpd && \
 
 ADD entrypoint.sh /etc/rc.d/rc.local
 RUN chmod +x /etc/rc.d/rc.local ; systemctl enable rc-local
-
+ENV XCATROOT /opt/xcat
+ENV PATH="$XCATROOT/bin:$XCATROOT/sbin:$XCATROOT/share/xcat/tools:$PATH" MANPATH="$XCATROOT/share/man:$MANPATH"
 VOLUME [ "/xcatdata", "/var/log/xcat" ]
 
 CMD [ "/sbin/init" ]
