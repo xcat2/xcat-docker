@@ -4,14 +4,6 @@ is_ubuntu=$(test -f /etc/debian_version && echo Y)
 [[ -z ${is_ubuntu} ]] && logadm="root:" || logadm="syslog:adm"
 chown -R ${logadm} /var/log/xcat/
 
-#/dev/loop0 and /dev/loop1 will be occupied by docker by default
-#create a loop device if there is no free loop device inside container
-losetup -f >/dev/null 2>&1 || (
-  maxloopdev=$(losetup -a|awk -F: '{print $1}'|sort -f -r|head -n1);
-  maxloopidx=$[${maxloopdev/#\/dev\/loop}];
-  mknod /dev/loop$[maxloopidx+1] -m0660 b 7 $[maxloopidx+1] && echo "no free loop device inside container,created a new loop device /dev/loop$[maxloopidx+1]..."
-)
-
 if [[ -e "/etc/NEEDINIT"  ]]; then
     echo "initializing xCAT Tables..."
     xcatconfig -d
@@ -19,6 +11,13 @@ if [[ -e "/etc/NEEDINIT"  ]]; then
     echo "initializing networks table..."
     tabprune networks -a
     makenetworks
+
+    echo "initializing loop devices..."
+    # workaround for no loop device could be used by copycds
+    for i in {0..7}
+    do
+        test -b /dev/loop$i || mknod /dev/loop$i -m0660 b 7 $i
+    done
 
     rm -f /etc/NEEDINIT
 fi
