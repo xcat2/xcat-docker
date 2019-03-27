@@ -23,7 +23,7 @@ RUN mkdir -p /xcatdata/etc/{dhcp,goconserver,xcat} && ln -sf -t /etc /xcatdata/e
     mkdir -p /xcatdata/.xcat && ln -sf -t /root /xcatdata/.xcat
 
 RUN yum install -y -q wget which &&\
-    wget ${xcat_reporoot}/${xcat_version}/xcat-core/xcat-core.repo -O /etc/yum.repos.d/xcat-core.repo && \
+    wget ${xcat_reporoot}/${xcat_version}/$([[ "devel" = "${xcat_version}" ]] && echo 'core-snap' || echo 'xcat-core')/xcat-core.repo -O /etc/yum.repos.d/xcat-core.repo && \
     wget ${xcat_reporoot}/${xcat_version}/xcat-dep/${xcat_baseos}/$(uname -m)/xcat-dep.repo -O /etc/yum.repos.d/xcat-dep.repo && \
     yum install -y \
        xCAT \
