@@ -25,7 +25,8 @@ RUN mkdir -p /xcatdata/etc/dhcp && rm -rf /etc/dhcp && ln -sf -t /etc /xcatdata/
     mkdir -p /xcatdata/.xcat && ln -sf -t /root /xcatdata/.xcat
 
 RUN echo "APT::Get::Install-Recommends \"false\";\nAPT::Get::Install-Suggests \"false\";" >> /etc/apt/apt.conf && \
-    echo "deb [allow-insecure=yes] ${xcat_reporoot}/${xcat_version}/xcat-core  ${xcat_baseos} main" > /etc/apt/sources.list.d/xcat-core.list && \
+    (xcat_core_repo=$(bash -c "[[ 'devel' = ${xcat_version} ]] && echo 'core-snap' || echo 'xcat-core'");\
+    echo "deb [allow-insecure=yes] ${xcat_reporoot}/${xcat_version}/${xcat_core_repo}  ${xcat_baseos} main" > /etc/apt/sources.list.d/xcat-core.list) && \
     echo "deb [allow-insecure=yes] ${xcat_reporoot}/${xcat_version}/xcat-dep  ${xcat_baseos} main" > /etc/apt/sources.list.d/xcat-dep.list
 
 # Workaround for systemctl issue in postinst script of below package

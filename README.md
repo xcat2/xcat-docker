@@ -1,8 +1,8 @@
 # xCAT Server Container
 ## Description
 xCAT is Extreme Cloud Administration Toolkit, xCAT offers complete management for bare-metal based cluster.
-## Building
-#### Build xCAT container based on Centos 7.x
+## Building (latest stable version)
+#### Build latest stable version xCAT container based on Centos 7.x
 ```
 $ docker build -t xcat .
 ```
@@ -12,7 +12,12 @@ $ docker build -f ubuntu/Dockerfile -t xcat:xenial .
 ```
 #### Build container based on Ubuntu 18.04 (Bionic)
 ```
-$ docker build --build-arg xcat_basos=bionic -f ubuntu/Dockerfile -t xcat:bionic .
+$ docker build --build-arg xcat_baseos=bionic -f ubuntu/Dockerfile -t xcat:bionic .
+```
+## Building (dailybuild)
+#### Build dailybuild xCAT container based on Centos 7.x
+```
+$ docker build --build-arg xcat_version=devel -t xcat-devel .
 ```
 
 ## Launching
