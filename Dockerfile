@@ -35,10 +35,11 @@ RUN yum install -y -q wget which &&\
     yum clean all
 
 RUN sed -i -e 's|#PermitRootLogin yes|PermitRootLogin yes|g' \
+           -e 's|#Port 22|Port 2200|g' \
            -e 's|#UseDNS yes|UseDNS no|g' /etc/ssh/sshd_config && \
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
     echo "root:cluster" | chpasswd && \
-    touch /etc/NEEDINIT
+    mv /xcatdata /xcatdata.NEEDINIT
 
 RUN systemctl enable httpd && \
     systemctl enable sshd && \
@@ -46,11 +47,12 @@ RUN systemctl enable httpd && \
     systemctl enable rsyslog && \
     systemctl enable xcatd
 
-ADD entrypoint.sh /etc/rc.d/rc.local
-RUN chmod +x /etc/rc.d/rc.local ; systemctl enable rc-local
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 ENV XCATROOT /opt/xcat
 ENV PATH="$XCATROOT/bin:$XCATROOT/sbin:$XCATROOT/share/xcat/tools:$PATH" MANPATH="$XCATROOT/share/man:$MANPATH"
 VOLUME [ "/xcatdata", "/var/log/xcat" ]
 
-CMD [ "/sbin/init" ]
+CMD [ "/entrypoint.sh" ]
 
