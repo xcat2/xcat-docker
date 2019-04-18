@@ -7,7 +7,7 @@ chown -R ${logadm} /var/log/xcat/
 if [[ -d "/xcatdata.NEEDINIT"  ]]; then
     echo "initializing xCAT ..."
     rsync -a /xcatdata.NEEDINIT/ /xcatdata
-    mv /xcatdata.NEEDINI /xcatdata.orig
+    mv /xcatdata.NEEDINIT /xcatdata.orig
     xcatconfig -i
 
     #echo "initializing networks table..."
