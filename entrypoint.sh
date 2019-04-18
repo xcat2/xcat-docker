@@ -20,7 +20,8 @@ if [[ -d "/xcatdata.NEEDINIT"  ]]; then
     do
         test -b /dev/loop$i || mknod /dev/loop$i -m0660 b 7 $i
     done
-
+    # workaround for missing `switch_macmap` (#13)
+    ln -sf /opt/xcat/bin/xcatclient /opt/xcat/probe/subcmds/bin/switchprobe
 fi
 
 cat /etc/motd
