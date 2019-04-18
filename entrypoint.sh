@@ -3,14 +3,16 @@
 is_ubuntu=$(test -f /etc/debian_version && echo Y)
 [[ -z ${is_ubuntu} ]] && logadm="root:" || logadm="syslog:adm"
 chown -R ${logadm} /var/log/xcat/
+. /etc/profile.d/xcat.sh
+if [[ -d "/xcatdata.NEEDINIT"  ]]; then
+    echo "initializing xCAT ..."
+    rsync -a /xcatdata.NEEDINIT/ /xcatdata
+    mv /xcatdata.NEEDINI /xcatdata.orig
+    xcatconfig -i
 
-if [[ -e "/etc/NEEDINIT"  ]]; then
-    echo "initializing xCAT Tables..."
-    xcatconfig -d
-
-    echo "initializing networks table..."
-    tabprune networks -a
-    makenetworks
+    #echo "initializing networks table..."
+    #tabprune networks -a
+    #makenetworks
 
     echo "initializing loop devices..."
     # workaround for no loop device could be used by copycds
@@ -19,18 +21,7 @@ if [[ -e "/etc/NEEDINIT"  ]]; then
         test -b /dev/loop$i || mknod /dev/loop$i -m0660 b 7 $i
     done
 
-    rm -f /etc/NEEDINIT
 fi
-
-
-#restore the backuped db on container start to resume the service state
-if [[ -d "/.dbbackup" ]]; then
-        echo "xCAT DB backup directory \"/.dbbackup\" detected, restoring xCAT tables from /.dbbackup/..."
-        restorexCATdb -p /.dbbackup/
-        echo "finished xCAT Tables restore!"
-fi
-
-. /etc/profile.d/xcat.sh
 
 cat /etc/motd
 HOSTIPS=$(ip -o -4 addr show up|grep -v "\<lo\>"|xargs -I{} expr {} : ".*inet \([0-9.]*\).*")
@@ -41,4 +32,4 @@ echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 
 #read -p "press any key to continue..."
-/bin/bash
+exec /sbin/init
