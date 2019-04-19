@@ -19,8 +19,7 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; \
         rm -f /lib/systemd/system/anaconda.target.wants/*
 
 RUN mkdir -p /xcatdata/etc/{dhcp,goconserver,xcat} && ln -sf -t /etc /xcatdata/etc/{dhcp,goconserver,xcat} && \
-    mkdir -p /xcatdata/{install,tftpboot} && ln -sf -t / /xcatdata/{install,tftpboot} && \
-    mkdir -p /xcatdata/.xcat && ln -sf -t /root /xcatdata/.xcat
+    mkdir -p /xcatdata/{install,tftpboot} && ln -sf -t / /xcatdata/{install,tftpboot}
 
 RUN yum install -y -q wget which &&\
     wget ${xcat_reporoot}/${xcat_version}/$([[ "devel" = "${xcat_version}" ]] && echo 'core-snap' || echo 'xcat-core')/xcat-core.repo -O /etc/yum.repos.d/xcat-core.repo && \
@@ -39,6 +38,7 @@ RUN sed -i -e 's|#PermitRootLogin yes|PermitRootLogin yes|g' \
            -e 's|#UseDNS yes|UseDNS no|g' /etc/ssh/sshd_config && \
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
     echo "root:cluster" | chpasswd && \
+    rm -rf /root/.ssh && \
     mv /xcatdata /xcatdata.NEEDINIT
 
 RUN systemctl enable httpd && \

@@ -68,8 +68,8 @@ manifest:
 
 help:
 	@echo "make build"
-	@echo "make build USER=xcat2"
-	@echo "make build USER=xcat2 VERSION=latest"
+	@echo "make build USER=xcat"
+	@echo "make push USER=xcat VERSION=latest"
 	@echo "make manifest USER=myname DOCKER_BUILD_MANIFEST=`pwd`/manifest.yml"
 	@echo "make all"
 	@echo "make all ubuntu=1"

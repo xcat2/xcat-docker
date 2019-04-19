@@ -21,8 +21,7 @@ RUN mkdir -p /xcatdata/etc/dhcp && rm -rf /etc/dhcp && ln -sf -t /etc /xcatdata/
     mkdir -p /xcatdata/etc/goconserver && ln -sf -t /etc /xcatdata/etc/goconserver && \
     mkdir -p /xcatdata/etc/xcat && ln -sf -t /etc /xcatdata/etc/xcat && \
     mkdir -p /xcatdata/install && ln -sf -t / /xcatdata/install && \
-    mkdir -p /xcatdata/tftpboot && ln -sf -t / /xcatdata/tftpboot && \
-    mkdir -p /xcatdata/.xcat && ln -sf -t /root /xcatdata/.xcat
+    mkdir -p /xcatdata/tftpboot && ln -sf -t / /xcatdata/tftpboot
 
 RUN echo "APT::Get::Install-Recommends \"false\";\nAPT::Get::Install-Suggests \"false\";" >> /etc/apt/apt.conf && \
     (xcat_core_repo=$(bash -c "[[ 'devel' = ${xcat_version} ]] && echo 'core-snap' || echo 'xcat-core'");\
@@ -49,7 +48,8 @@ RUN sed -i -e 's|PermitRootLogin prohibit-password|PermitRootLogin yes|g' \
     echo "root:cluster" | chpasswd && \
     sudo a2enmod ssl && \
     ln -s ../sites-available/default-ssl.conf /etc/apache2/sites-enabled/ssl.conf && \
-    touch /etc/NEEDINIT
+    rm -rf /root/.ssh && \
+    mv /xcatdata /xcatdata.NEEDINIT
 
 RUN systemctl enable apache2 && \
     systemctl enable ssh && \
@@ -57,10 +57,10 @@ RUN systemctl enable apache2 && \
     systemctl enable rsyslog && \
     systemctl enable xcatd
 
-ADD entrypoint.sh /etc/rc.d/rc.local
-RUN chmod +x /etc/rc.d/rc.local ; systemctl enable rc-local
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ENV XCATROOT /opt/xcat
 ENV PATH="$XCATROOT/bin:$XCATROOT/sbin:$XCATROOT/share/xcat/tools:$PATH" MANPATH="$XCATROOT/share/man:$MANPATH"
 VOLUME [ "/xcatdata", "/var/log/xcat" ]
 
-CMD [ "/sbin/init" ]
+CMD [ "/entrypoint.sh" ]
