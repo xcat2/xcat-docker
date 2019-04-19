@@ -1,11 +1,11 @@
 NAME=xcat2
 REGISTRY=docker.io
-USERNAME=$(USER)
+ORGNAME=$(USER)
 
-IMAGE=$(REGISTRY)/$(USERNAME)/$(NAME)
-VERSION=devel
+IMAGE=$(REGISTRY)/$(ORGNAME)/$(NAME)
 
 SHELL=/bin/bash
+VERSION=devel
 ifeq ($(VERSION), latest)
 	STABLE_VER:=$(shell curl -s http://xcat.org/files/xcat/repos/yum/$(VERSION)/xcat-core/buildinfo|grep VERSION=|cut -d '=' -f 2)
 endif
@@ -28,7 +28,7 @@ $(warning IMAGE=$(IMAGE) VERSION=$(VERSION) TAG=$(TAG))
 
 .PHONY: pre-build docker-build post-build build \
 		push pre-push do-push post-push \
-		ubuntu manifest all
+		manifest all
 
 all: build push manifest
 
@@ -62,14 +62,22 @@ post-push:
 
 
 DOCKER_BUILD_MANIFEST:=$(shell pwd)/manifest/xcat-$(STABLE_VER).yml
+ifdef DOCKER_PW
+	DOCKER_AUTH_STRING=--username $(USER) --password $(DOCKER_PW)
+endif
 manifest:
 	@echo "INFO: create manifest $(IMAGE):$(STABLE_VER) from $(DOCKER_BUILD_MANIFEST)..."
-	docker run -v $(DOCKER_BUILD_MANIFEST):/xcat2.yml --rm mplatform/manifest-tool --debug --username=$(USER) push from-spec /xcat2.yml
+	docker run --rm \
+		-v $(DOCKER_BUILD_MANIFEST):/xcat2.yml \
+		-v $(HOME)/.docker:/tmp/docker-cfg \
+		mplatform/manifest-tool --debug  --docker-cfg '/tmp/docker-cfg' $(DOCKER_AUTH_STRING) \
+		push from-spec /xcat2.yml
 
 help:
-	@echo "make build"
-	@echo "make build USER=xcat"
-	@echo "make push USER=xcat VERSION=latest"
-	@echo "make manifest USER=myname DOCKER_BUILD_MANIFEST=`pwd`/manifest.yml"
-	@echo "make all"
-	@echo "make all ubuntu=1"
+	@echo "make <target> [VERSION=latest REGISTRY=myregistry.org ORGNAME=xyz USER=myname ubuntu=1 ...]"
+	@echo ""
+	@echo "make build - build docker image"
+	@echo "make push  - push docker image to docker registry"
+	@echo "make manifest [ USER=myname DOCKER_BUILD_MANIFEST=`pwd`/manifest.yml ]" - create and push manifest
+	@echo "make all  - build, push and create manifest"
+	@echo "make all ubuntu=1 - ubuntu based container"
