@@ -62,12 +62,15 @@ post-push:
 
 
 DOCKER_BUILD_MANIFEST:=$(shell pwd)/manifest/xcat-$(STABLE_VER).yml
+ifdef DOCKER_PW
+	DOCKER_AUTH_STRING=--username $(USER) --password $(DOCKER_PW)
+endif
 manifest:
 	@echo "INFO: create manifest $(IMAGE):$(STABLE_VER) from $(DOCKER_BUILD_MANIFEST)..."
 	docker run --rm \
 		-v $(DOCKER_BUILD_MANIFEST):/xcat2.yml \
 		-v $(HOME)/.docker:/tmp/docker-cfg \
-		mplatform/manifest-tool --debug  --docker-cfg '/tmp/docker-cfg' \
+		mplatform/manifest-tool --debug  --docker-cfg '/tmp/docker-cfg' $(DOCKER_AUTH_STRING) \
 		push from-spec /xcat2.yml
 
 help:
