@@ -1,4 +1,5 @@
 image: xcat/xcat2:2.14.6
+tags: ['latest']
 manifests:
   - image: xcat/xcat2:2.14.6-x86_64
     platform:
