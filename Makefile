@@ -5,6 +5,7 @@ ORGNAME=$(USER)
 IMAGE=$(REGISTRY)/$(ORGNAME)/$(NAME)
 
 SHELL=/bin/bash
+BUILD_TMP=/tmp
 VERSION=devel
 ifeq ($(VERSION), latest)
 	STABLE_VER:=$(shell curl -s http://xcat.org/files/xcat/repos/yum/$(VERSION)/xcat-core/buildinfo|grep VERSION=|cut -d '=' -f 2)
@@ -61,23 +62,35 @@ do-push:
 post-push:
 
 
-DOCKER_BUILD_MANIFEST:=$(shell pwd)/manifest/xcat-$(STABLE_VER).yml
+
+DOCKER_BUILD_MANIFEST=$(shell pwd)/manifest/xcat-$(STABLE_VER).yml
+DOCKER_BUILD_MANIFEST_TMP=$(BUILD_TMP)/xcat-$(STABLE_VER).yml
+pre-manifest:
+ifeq ($(suffix $(DOCKER_BUILD_MANIFEST)), .in)
+	@echo "generate manifest file from $(DOCKER_BUILD_MANIFEST)..."
+	@sed "s/#NAME#/${NAME}/g; s/#ORGNAME#/${ORGNAME}/g; s/#VERSION#/${STABLE_VER}/g" \
+		$(DOCKER_BUILD_MANIFEST) > $(DOCKER_BUILD_MANIFEST_TMP)
+else
+	@cp -f ${DOCKER_BUILD_MANIFEST} ${DOCKER_BUILD_MANIFEST_TMP}
+endif
+	@cat ${DOCKER_BUILD_MANIFEST_TMP}
+
 ifdef DOCKER_PW
 	DOCKER_AUTH_STRING=--username $(USER) --password $(DOCKER_PW)
 endif
-manifest:
+manifest: pre-manifest
 	@echo "INFO: create manifest $(IMAGE):$(STABLE_VER) from $(DOCKER_BUILD_MANIFEST)..."
 	docker run --rm \
-		-v $(DOCKER_BUILD_MANIFEST):/xcat2.yml \
+		-v $(DOCKER_BUILD_MANIFEST_TMP):/xcat2.yml \
 		-v $(HOME)/.docker:/tmp/docker-cfg \
 		mplatform/manifest-tool --debug  --docker-cfg '/tmp/docker-cfg' $(DOCKER_AUTH_STRING) \
 		push from-spec /xcat2.yml
-
+	@rm -f $(DOCKER_BUILD_MANIFEST_TMP)
 help:
 	@echo "make <target> [VERSION=latest REGISTRY=myregistry.org ORGNAME=xyz USER=myname ubuntu=1 ...]"
 	@echo ""
 	@echo "make build - build docker image"
 	@echo "make push  - push docker image to docker registry"
-	@echo "make manifest [ USER=myname DOCKER_BUILD_MANIFEST=`pwd`/manifest.yml ]" - create and push manifest
+	@echo "make manifest [ ORGNAME=xyz DOCKER_BUILD_MANIFEST=manifest/xcat.yml.in ]" - create and push manifest
 	@echo "make all  - build, push and create manifest"
 	@echo "make all ubuntu=1 - ubuntu based container"
