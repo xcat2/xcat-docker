@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:7.9.2009
 
 MAINTAINER The xCAT Project
 
